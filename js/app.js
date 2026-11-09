@@ -40,7 +40,7 @@ function layout(content, title) {
   document.getElementById("app").innerHTML = `
     <div class="app-shell">
       <aside class="sidebar" id="sidebar">
-        <div class="brand"><span class="brand-mark">C</span><span>comércio<span class="brand-light"> simples</span></span></div>
+        <div class="brand"><span class="brand-mark">C</span><span>Smart<span class="brand-light"> Store</span></span></div>
         <p class="nav-label">Menu principal</p>
         <nav class="nav-list">${links.map(([key,icon,label,url]) => `<a class="nav-link ${currentPage===key?"active":""}" href="${url}"><span class="nav-icon">${icon}</span>${label}</a>`).join("")}</nav>
         <div class="sidebar-bottom">
