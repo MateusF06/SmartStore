@@ -1,18 +1,4 @@
-# Smart Store — Front-end
-
-## Requisitos
-- Navegador atualizado
-- Visual Studio Code (recomendado)
-- Extensão Live Server (recomendada)
-
-## Como executar
-1. Extraia a pasta `sistema-comercio-frontend`.
-2. Abra a pasta no VS Code.
-3. Clique com o botão direito em `index.html`.
-4. Escolha **Open with Live Server**.
-5. Entre com qualquer e-mail e senha e selecione o perfil.
-
-Também é possível abrir `index.html` diretamente no navegador, mas o Live Server facilita o desenvolvimento.
+# Smart Store
 
 ## Perfis demonstrativos
 - Funcionário: acessa Visão geral, Produtos e Vendas.
