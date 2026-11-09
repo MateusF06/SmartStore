@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Store | Entrar</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/login.js" defer></script>
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <div class="brand brand-login"><span class="brand-mark">C</span><span>Smart<span class="brand-light"> Store</span></span></div>
+    <div class="login-heading">
+      <h1>Bem-vindo de volta</h1>
+      <p>Entre para acessar o sistema de comércio.</p>
+    </div>
+    <form id="loginForm">
+      <label for="email">E-mail</label>
+      <input id="email" type="email" placeholder="seu@email.com" autocomplete="username" required>
+      <label for="password">Senha</label>
+      <input id="password" type="password" placeholder="Digite sua senha" autocomplete="current-password" required>
+      <label for="role">Tipo de acesso</label>
+      <select id="role" required>
+        <option value="FUNCIONARIO">Funcionário</option>
+        <option value="ADMIN">Administrador</option>
+      </select>
+      <p id="loginError" class="form-error" role="alert"></p>
+      <button class="btn btn-primary btn-full" type="submit">Entrar no sistema</button>
+    </form>
+    <div class="login-hint">
+      <strong>Acesso demonstrativo</strong>
+      <span>Informe qualquer e-mail e senha para testar.</span>
+    </div>
+  </main>
+</body>
+</html>
