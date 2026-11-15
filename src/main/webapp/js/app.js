@@ -1,9 +1,11 @@
 const STORAGE_PRODUCTS = "comercioProducts";
 const STORAGE_SALES = "comercioSales";
 const currentPage = document.body.dataset.page || "dashboard";
-const user = JSON.parse(localStorage.getItem("comercioUser") || "null");
+const user = window.SERVER_USER || JSON.parse(localStorage.getItem("comercioUser") || "null");
 
-if (!user) window.location.href = "index.html";
+if (!user || !user.name || user.name === "null") {
+  window.location.href = "index.jsp";
+}
 
 const money = value => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const dateText = value => new Date(value).toLocaleDateString("pt-BR");
@@ -32,12 +34,14 @@ const isAdmin = user?.role === "ADMIN";
 
 function layout(content, title) {
   const links = [
-    ["dashboard","⌂","Visão geral","dashboard.html"],
-    ["produtos","▦","Produtos","produtos.html"],
-    ["vendas","▤","Vendas","vendas.html"],
-    ...(isAdmin ? [["relatorios","▥","Relatórios","relatorios.html"]] : [])
+    ["dashboard","⌂","Visão geral","dashboard.jsp"],
+    ["produtos","▦","Produtos","produtos.jsp"],
+    ["vendas","▤","Vendas","vendas.jsp"],
+    ...(isAdmin ? [["relatorios","▥","Relatórios","relatorios.jsp"]] : [])
   ];
-  document.getElementById("app").innerHTML = `
+  const appEl = document.getElementById("app");
+  if (!appEl) return;
+  appEl.innerHTML = `
     <div class="app-shell">
       <aside class="sidebar" id="sidebar">
         <div class="brand"><span class="brand-mark">C</span><span>Smart<span class="brand-light"> Store</span></span></div>
@@ -56,26 +60,32 @@ function layout(content, title) {
         <section class="content">${content}</section>
       </main>
     </div>`;
-  document.getElementById("logoutBtn").addEventListener("click", () => { localStorage.removeItem("comercioUser"); window.location.href="index.html"; });
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("comercioUser");
+    window.location.href = "index.jsp?logout=true";
+  });
   document.getElementById("menuBtn").addEventListener("click", () => document.getElementById("sidebar").classList.toggle("open"));
 }
+
 function toast(message) {
   const old = document.querySelector(".toast"); if (old) old.remove();
   const el = document.createElement("div"); el.className="toast"; el.textContent=message; document.body.appendChild(el);
   setTimeout(()=>el.remove(),2600);
 }
+
 function stockBadge(stock) {
   if (stock <= 0) return '<span class="badge out">Sem estoque</span>';
   if (stock <= 10) return '<span class="badge low">Estoque baixo</span>';
   return '<span class="badge">Disponível</span>';
 }
+
 function renderDashboard() {
   const products=getProducts(), sales=getSales();
   const revenue=sales.reduce((sum,s)=>sum+s.total,0);
   const units=products.reduce((sum,p)=>sum+p.stock,0);
   const recent=[...sales].reverse().slice(0,5);
   layout(`
-    <div class="page-heading"><div><h1>Visão geral</h1><p>Acompanhe os principais números do seu comércio.</p></div><a class="btn btn-primary" href="vendas.html">+ Nova venda</a></div>
+    <div class="page-heading"><div><h1>Visão geral</h1><p>Acompanhe os principais números do seu comércio.</p></div><a class="btn btn-primary" href="vendas.jsp">+ Nova venda</a></div>
     <div class="stats-grid">
       <article class="stat-card"><div class="stat-top">Faturamento registrado <span class="stat-symbol">R$</span></div><div class="stat-value">${money(revenue)}</div><div class="stat-note">Total das vendas registradas</div></article>
       <article class="stat-card"><div class="stat-top">Vendas realizadas <span class="stat-symbol">↗</span></div><div class="stat-value">${sales.length}</div><div class="stat-note">Quantidade de vendas</div></article>
@@ -83,14 +93,15 @@ function renderDashboard() {
       <article class="stat-card"><div class="stat-top">Unidades em estoque <span class="stat-symbol">□</span></div><div class="stat-value">${units}</div><div class="stat-note">${products.filter(p=>p.stock<=10).length} produto(s) com estoque baixo ou zerado</div></article>
     </div>
     <div class="dashboard-grid">
-      <section class="panel"><div class="panel-header"><h2>Vendas recentes</h2><a class="muted" href="vendas.html">Ver vendas</a></div>
+      <section class="panel"><div class="panel-header"><h2>Vendas recentes</h2><a class="muted" href="vendas.jsp">Ver vendas</a></div>
         ${recent.length?`<div class="table-wrap"><table><thead><tr><th>Venda</th><th>Data</th><th>Valor total</th></tr></thead><tbody>${recent.map(s=>`<tr><td><strong>#${s.id}</strong></td><td>${dateText(s.date)}</td><td>${money(s.total)}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-state">Nenhuma venda registrada até o momento.</div>'}
       </section>
-      <section class="panel"><div class="panel-header"><h2>Atenção ao estoque</h2><a class="muted" href="produtos.html">Gerenciar</a></div>
+      <section class="panel"><div class="panel-header"><h2>Atenção ao estoque</h2><a class="muted" href="produtos.jsp">Gerenciar</a></div>
         ${products.filter(p=>p.stock<=10).length?products.filter(p=>p.stock<=10).map(p=>`<div class="cart-line"><div><strong>${escapeHTML(p.name)}</strong><small>${p.stock} unidade(s) restantes</small></div>${stockBadge(p.stock)}</div>`).join(""):'<div class="empty-state">Todos os produtos possuem estoque adequado.</div>'}
       </section>
     </div>`, "Visão geral");
 }
+
 function renderProducts() {
   layout(`
     <div class="page-heading"><div><h1>Produtos</h1><p>Cadastre e acompanhe os produtos do seu comércio.</p></div><button class="btn btn-primary" id="newProduct">+ Novo produto</button></div>
@@ -114,6 +125,7 @@ function renderProducts() {
   document.getElementById("newProduct").addEventListener("click",()=>openProductModal());
   draw();
 }
+
 function openProductModal(id=null) {
   const p=id?getProducts().find(x=>x.id===id):null;
   document.getElementById("modalRoot").innerHTML=`<div class="modal-backdrop"><div class="modal">
@@ -136,11 +148,13 @@ function openProductModal(id=null) {
     close(); renderProducts(); toast(p?"Produto atualizado!":"Produto cadastrado!");
   };
 }
+
 function deleteProduct(id) {
   const products=getProducts(), p=products.find(x=>x.id===id);
   if(!confirm(`Deseja excluir "${p.name}"?`)) return;
   saveProducts(products.filter(x=>x.id!==id)); renderProducts(); toast("Produto excluído.");
 }
+
 let cart=[];
 function renderSales() {
   layout(`
@@ -161,12 +175,14 @@ function renderSales() {
   document.getElementById("finishSale").onclick=finishSale;
   drawPicker(); drawCart();
 }
+
 function addToCart(id) {
   const p=getProducts().find(x=>x.id===id), line=cart.find(x=>x.id===id);
   if(!p||p.stock<= (line?.quantity||0)){toast("Quantidade maior que o estoque disponível.");return;}
   if(line) line.quantity++; else cart.push({id:p.id,name:p.name,price:p.price,quantity:1});
   drawCart();
 }
+
 function drawCart() {
   const root=document.getElementById("cartItems"); if(!root)return;
   root.innerHTML=cart.length?cart.map(i=>`<div class="cart-line"><div><strong>${escapeHTML(i.name)}</strong><small>${i.quantity} × ${money(i.price)}</small></div><div class="actions"><strong>${money(i.quantity*i.price)}</strong><button class="btn btn-danger btn-small" data-remove="${i.id}">−</button></div></div>`).join(""):'<div class="cart-empty">Seu carrinho está vazio.</div>';
@@ -174,6 +190,7 @@ function drawCart() {
   document.getElementById("cartCount").textContent=`${cart.reduce((s,i)=>s+i.quantity,0)} item(ns)`;
   document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{const i=cart.find(x=>x.id===Number(b.dataset.remove));if(i.quantity>1)i.quantity--;else cart=cart.filter(x=>x.id!==i.id);drawCart();});
 }
+
 function finishSale() {
   if(!cart.length){toast("Adicione pelo menos um produto.");return;}
   const products=getProducts();
@@ -184,6 +201,7 @@ function finishSale() {
   sales.push({id:sales.length?Math.max(...sales.map(s=>s.id))+1:1,date:new Date().toISOString(),total:cart.reduce((s,i)=>s+i.price*i.quantity,0),items:cart.map(i=>({...i}))});
   saveSales(sales);cart=[];renderSales();toast("Venda finalizada com sucesso!");
 }
+
 function renderReports() {
   if(!isAdmin){layout('<section class="panel empty-state">Você não tem permissão para acessar os relatórios.</section>',"Relatórios");return;}
   const sales=getSales(), products=getProducts(), total=sales.reduce((s,x)=>s+x.total,0);
@@ -207,4 +225,5 @@ function renderReports() {
     </div>
     <section class="panel" style="margin-top:18px"><div class="panel-header"><h2>Histórico de vendas</h2></div><div class="table-wrap"><table><thead><tr><th>Código</th><th>Data</th><th>Quantidade de itens</th><th>Valor total</th></tr></thead><tbody>${sales.slice().reverse().map(s=>`<tr><td>#${s.id}</td><td>${new Date(s.date).toLocaleString("pt-BR")}</td><td>${s.items.reduce((n,i)=>n+i.quantity,0)}</td><td><strong>${money(s.total)}</strong></td></tr>`).join("")||'<tr><td colspan="4" class="empty-state">Nenhuma venda registrada.</td></tr>'}</tbody></table></div></section>`, "Relatórios");
 }
+
 ({dashboard:renderDashboard,produtos:renderProducts,vendas:renderSales,relatorios:renderReports}[currentPage]||renderDashboard)();

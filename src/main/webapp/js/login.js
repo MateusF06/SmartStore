@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
       error.textContent = "Preencha o e-mail e a senha.";
       return;
     }
-    // Simulação temporária. A autenticação real será feita no backend Java.
     localStorage.setItem("comercioUser", JSON.stringify({
       email,
       name: email.split("@")[0],

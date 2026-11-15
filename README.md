@@ -15,9 +15,9 @@ Os produtos e as vendas são armazenados no `localStorage` do navegador. Para re
 ## Estrutura
 - `index.html`: login
 - `dashboard.html`: visão geral
-- `produtos.html`: CRUD demonstrativo de produtos
-- `vendas.html`: carrinho e finalização de venda
-- `relatorios.html`: resumo de vendas e estoque (administrador)
+- `produtos.jsp`: CRUD demonstrativo de produtos
+- `vendas.jsp`: carrinho e finalização de venda
+- `relatorios.jsp`: resumo de vendas e estoque (administrador)
 - `css/style.css`: estilos
 - `js/login.js`: simulação de login
 - `js/app.js`: navegação, dados e funcionalidades
